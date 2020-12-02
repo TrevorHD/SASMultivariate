@@ -1,6 +1,6 @@
 /* Initialise data ------------------------------------------------------------------------------------------------------------------- */
 
-ods pdf file = 'D:\Documents\GitHub\SASMultivariate\CoordinationData.pdf';
+ods pdf file = 'D:\Documents\GitHub\SASMultivariate\CoordinationDataOutput.pdf';
 
 options ls = 78;
 
