@@ -1,12 +1,12 @@
 /* Initialise data ------------------------------------------------------------------------------------------------------------------- */
 
-ods pdf file = 'C:\Users\Trevor Drees\Downloads\StudentData.pdf';
+ods pdf file = 'D:\Documents\GitHub\SASMultivariate\StudentDataOutput.pdf';
 
 options ls = 78;
 
 /* Load data from CSV */
 data StudentData;
-  infile "C:\Users\Trevor Drees\Downloads\StudentData.csv" firstobs = 2 delimiter = ',';
+  infile "D:\Documents\GitHub\SASMultivariate\StudentData.csv" firstobs = 2 delimiter = ',';
   input Math Physics English History AdvM $ GPA NSECH;
 run;
 
@@ -23,7 +23,7 @@ proc univariate data = StudentData;
 run;
 
 /* Create multivariate Q-Q plot */
-proc princomp data = StudentData std out = PComps; 
+proc princomp data = StudentData noprint std out = PComps; 
   var Math Physics English History GPA NSECH;
 run;
 data PComps;
@@ -116,6 +116,7 @@ proc iml;
   LoT = xbar-sqrt(p*(n-1)*f*s2/(n-p)/n);          *Lower simultaneous interval (T^2);
   UpT = xbar+sqrt(p*(n-1)*f*s2/(n-p)/n);          *Upper simultaneous interval (T^2);
   print varNames LoI UpI LoB UpB LoT UpT;
+quit;
 
 /* Create profile plots of each variable */
   %let p = 6;
@@ -224,26 +225,20 @@ proc glm data = StudentData;
   estimate 'Difference' AdvM  1 -1;
   output out = resids r = rMath rPhysics rEnglish rHistory;
   manova h = AdvM / printe printh;
-  run; quit;
+run; quit;
 
 /* Assess if covariance matrices are constant */
 proc sort data = resids;
   by AdvM;
-  run;
+run;
 proc corr cov data = resids;
   by AdvM;
   var rMath rPhysics rEnglish rHistory;
-  run;
+run;
 proc discrim data = StudentData pool = test;
   class AdvM;
   var Math Physics English History;
-  run;
-
-/* Assessing normality or model residuals */
-proc univariate noprint data = resids;
-  histogram rMath rPhysics rEnglish rHistory / normal(mu = est sigma = est);
-  qqplot rMath rPhysics rEnglish rHistory / normal(mu = est sigma = est);
-  run;
+run;
 
 
 
@@ -254,27 +249,27 @@ proc univariate noprint data = resids;
 /* Create scatterplots to examine subjects useful for classification */
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = Math x = Physics / group = AdvM;
-  run;
+run;
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = English x = History / group = AdvM;
-  run;
+run;
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = Math x = English / group = AdvM;
-  run;
+run;
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = Math x = History / group = AdvM;
-  run;
+run;
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = Physics x = English / group = AdvM;
-  run;
+run;
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = Physics x = History / group = AdvM;
-  run;
+run;
 
 /* Create scatterplots to examine subjects if GPA and NSECH are useful for classification */
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
   compare y = GPA x = NSECH / group = AdvM;
-  run;
+run;
 
 /* Data points to classify */
 data SDTest;
@@ -285,33 +280,33 @@ data SDTest;
   74 73 93 87 3.65 5
   94 90 80 75 3.70 7
   85 77 97 90 3.68 8
-  ; run;
+; run;
 
 /* Classification via discriminant analysis, using all subjects as well as GPA and NSECH */
 proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR1;
   class AdvM;
   var Math Physics English History GPA NSECH;
   priors 'No' = 0.5 'Yes' = 0.5;
-  run;
+run;
 proc print data = SDTestR1;
-  run;
+run;
 
 /* Classification via discriminant analysis, using all subjects*/
 proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR1;
   class AdvM;
   var Math Physics English History;
   priors 'No' = 0.5 'Yes' = 0.5;
-  run;
+run;
 proc print data = SDTestR1;
-  run;
+run;
 
 /* Classification via discriminant analysis, using all subjects, using ONLY math and physics scores */
 proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR2;
   class AdvM;
   var Math Physics;
   priors 'No' = 0.5 'Yes' = 0.5;
-  run;
+run;
 proc print data = SDTestR2;
-  run;
+run;
 
 ods pdf close
