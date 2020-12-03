@@ -16,7 +16,7 @@ data CData2;
   Time = 12;  Coord = C1; output;
   Time = 18;  Coord = C2; output;
   Time = 24;  Coord = C3; output;
-  Time = 36;  Coord = C4; output;
+  Time = 30;  Coord = C4; output;
   drop C1 C2 C3 C4;
 run;
 
