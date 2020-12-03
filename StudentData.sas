@@ -50,7 +50,7 @@ run; quit;                   *Overall, data are multivariate normal
 
 /* Create matrix of scatterplots */;
 ods graphics on;
-proc corr data = StudentData noprob plots (maxpoints = 100000) = matrix;
+proc corr data = StudentData noprob plots (maxpoints = 100000) = matrix(nvar = all);
   var Math Physics English History GPA NSECH;
 run;
 ods graphics off;
