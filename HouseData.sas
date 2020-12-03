@@ -123,3 +123,5 @@ proc reg data = CannCorrs;
   model Price = HouseSize1 LocationQuality1 / vif tol collin;
 run;
 
+ods pdf close
+
