@@ -21,7 +21,7 @@ A collection of multivariate analyses using SAS. Here, I work with three example
 
 ## Outputs
 
-**CoordinationDataOutput** *(.pdf)* - SAS output from the corresponding script. [will be uploaded soon]
+**CoordinationDataOutput** *(.pdf)* - SAS output from the corresponding script.
 
 **HouseDataOutput** *(.pdf)* - SAS output from the corresponding script.
 
