@@ -18,23 +18,23 @@ run;
 
 /* Create matrix of scatterplots */
 ods graphics on;
-proc corr data = HouseData noprob plots (maxpoints = 100000) = matrix(nvar = all);
+proc corr data = HouseData plots (maxpoints = 100000) = matrix(nvar = all);
   var Nbr Nba Stry Sqft Price HOA Rec Edu Crm Grn Trn;
 run;
 ods graphics off;
 
 /* Examine relationship between house price and number of bedrooms */
-proc sgscatter data = PComps datasymbols = (CircleFilled); 
+proc sgscatter data = HouseData datasymbols = (CircleFilled); 
   compare y = Price  x = Nbr;
 run;
 
 /* Examine relationship between house price and number of bathrooms */
-proc sgscatter data = PComps datasymbols = (CircleFilled); 
+proc sgscatter data = HouseData datasymbols = (CircleFilled); 
   compare y = Price  x = Nba;
 run;
 
 /* Examine relationship between house price and square footage */
-proc sgscatter data = PComps datasymbols = (CircleFilled); 
+proc sgscatter data = HouseData datasymbols = (CircleFilled); 
   compare y = Price  x = Sqft;
 run;
 
@@ -61,15 +61,13 @@ proc gplot;
   symbol v = J f = special h = 2 i = none color = black;
 run; quit;
 
-/* Plot of first principal component against price */
+/* Plots of first principal component against price */
 proc sgscatter data = PComps datasymbols = (CircleFilled) datacontrastcolors = (black blue red orange); 
   compare y = Price  x = Prin1 / group = Nbr;
 run;
 proc sgscatter data = PComps datasymbols = (CircleFilled) datacontrastcolors = (black blue red orange yellow); 
   compare y = Price  x = Prin1 / group = Nba;
 run;
-
-* Plots are almost identical to that of square footage vs price
 
 
 
