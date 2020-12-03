@@ -73,6 +73,27 @@ run;
 
 
 
+/* Use regression to quantify price based on size and location variables ------------------------------------------------------------- */
+
+/* Standardise Sqft since it is on a wildly different scale compared to other variables */
+proc standard data = HouseData mean = 0 std = 1 out = StanHouseData;
+  var Sqft;
+run;
+
+/* Run linear regression; calculate VIF */
+proc reg data = StanHouseData;
+  model Price = Nbr Nba Stry Sqft HOA Rec Edu Crm Grn Trn / vif tol collin;
+run;
+
+/* Drop Sqft since it is redundant and run regression again */
+proc reg data = StanHouseData;
+  model Price = Nbr Nba Stry HOA Rec Edu Crm Grn Trn / vif tol collin;
+run;
+
+
+
+
+
 /* Examine relationships between house size and location quality --------------------------------------------------------------------- */
 
 /* Canonical correlation between house size and location quality */;
@@ -91,4 +112,14 @@ proc gplot data = CannCorrs;
   symbol v = J f = special h = 2 i = r color = black;
 run; quit;
 
+/* Scatterplot from above, but colour-coded by price */
+proc sgplot data = CannCorrs;
+  scatter x = LocationQuality1 y = HouseSize1 / colorresponse = Price colormodel = (yellow orange red)
+          markerattrs = (symbol = CircleFilled size = 8);
+run;
+
+/* Run linear regression for price as function of HouseSize1 and LocationQuality1 */
+proc reg data = CannCorrs;
+  model Price = HouseSize1 LocationQuality1 / vif tol collin;
+run;
 
