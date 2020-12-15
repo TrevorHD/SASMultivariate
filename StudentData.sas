@@ -4,10 +4,11 @@ ods pdf file = 'D:\Documents\GitHub\SASMultivariate\StudentDataOutput.pdf';
 
 options ls = 78;
 
-/* Load data from CSV */
+/* Load data from CSV and create unique ID for each student */
 data StudentData;
   infile "D:\Documents\GitHub\SASMultivariate\StudentData.csv" firstobs = 2 delimiter = ',';
   input Math Physics English History AdvM $ GPA NSECH;
+  IDs = _n_;
 run;
 
 
@@ -17,7 +18,7 @@ run;
 /* Assess normality of data ---------------------------------------------------------------------------------------------------------- */
 
 /* Assess normality of each variable */
-proc univariate data = StudentData;
+proc univariate data = StudentData noprint;
   histogram Math Physics English History GPA NSECH / normal(mu = est sigma = est);
   qqplot Math Physics English History GPA NSECH / normal(mu = est sigma = est);
 run;
@@ -50,7 +51,7 @@ run; quit;                   *Overall, data are multivariate normal
 
 /* Create matrix of scatterplots */;
 ods graphics on;
-proc corr data = StudentData noprob plots (maxpoints = 100000) = matrix(nvar = all);
+proc corr data = StudentData noprob nosimple nocorr plots (maxpoints = 100000) = matrix(nvar = all);
   var Math Physics English History GPA NSECH;
 run;
 ods graphics off;
@@ -77,7 +78,7 @@ proc sort data = StudentData;
 run;
 
 /* Calculate sample covariance matrix */
-proc corr cov nocorr out = CorrMatrix;
+proc corr cov noprob nosimple nocorr out = CorrMatrix;
   var Math Physics English History GPA NSECH;
 run;
 
@@ -164,7 +165,7 @@ proc sort data = StudentData;
 run;
 
 /* Calculate sample covariance matrix */
-proc corr cov nocorr out = CorrMatrix;
+proc corr cov nocorr nosimple out = CorrMatrix;
   by AdvM;
   var Math Physics English History;
 run;
@@ -231,11 +232,11 @@ run; quit;
 proc sort data = resids;
   by AdvM;
 run;
-proc corr cov data = resids;
+proc corr cov nocorr nosimple data = resids;
   by AdvM;
   var rMath rPhysics rEnglish rHistory;
 run;
-proc discrim data = StudentData pool = test;
+proc discrim noclassify data = StudentData pool = test;
   class AdvM;
   var Math Physics English History;
 run;
@@ -244,7 +245,7 @@ run;
 
 
 
-/* Classify students into AdvM (or not) based on test scores ------------------------------------------------------------------------- */
+/* Classify students into AdvM (or not) based on test scores, using discriminant analysis -------------------------------------------- */
 
 /* Create scatterplots to examine subjects useful for classification */
 proc sgscatter data = StudentData datasymbols = (CircleFilled) datacontrastcolors = (blue red); 
@@ -291,22 +292,70 @@ run;
 proc print data = SDTestR1;
 run;
 
-/* Classification via discriminant analysis, using all subjects*/
-proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR1;
+* CV matrix yields false positive rate of 20% and false negative rate of 20%; 
+
+/* Classification via discriminant analysis, using all subjects */
+proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR2;
   class AdvM;
   var Math Physics English History;
   priors 'No' = 0.5 'Yes' = 0.5;
 run;
-proc print data = SDTestR1;
+proc print data = SDTestR2;
 run;
 
-/* Classification via discriminant analysis, using all subjects, using ONLY math and physics scores */
-proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR2;
+* CV matrix yields false positive rate of 15% and false negative rate of 25%;
+
+/* Classification via discriminant analysis, using ONLY math and physics scores */
+proc discrim data = StudentData pool = test crossvalidate testdata = SDTest testout = SDTestR3;
   class AdvM;
   var Math Physics;
   priors 'No' = 0.5 'Yes' = 0.5;
 run;
-proc print data = SDTestR2;
+proc print data = SDTestR3;
 run;
+
+* CV matrix yields false positive rate of 20% and false negative rate of 30%;
+
+
+
+
+
+/* Classify students into AdvM (or not) based on test scores, using cluster analysis ------------------------------------------------- */
+
+/* Sort data by ID and run cluster analysis using Ward's method */
+proc sort data = StudentData;
+  by IDs;
+run;
+proc cluster data = StudentData method = ward outtree = SDCluster1;
+  var Math Physics English History GPA NSECH;
+  id IDs;
+run;
+
+/* Assume 2 clusters and calculate resulting statistics */
+proc tree data = SDCluster1 nclusters = 2 out = SDCluster2;
+  id IDs;
+run;
+proc sort data = SDCluster2;
+  by IDs;
+run;
+data SDCluster3;
+  merge StudentData SDCluster2;
+  by IDs;
+run;
+proc glm data = SDCluster3;
+  class cluster;
+  model Math Physics English History GPA NSECH = cluster;
+  means cluster;
+run; quit;
+
+/* Create frequency table similar to CV table from discriminant analysis */
+proc sort data = SDCluster3;
+  by AdvM cluster;
+run;
+proc freq data = SDCluster3;
+  tables AdvM*cluster;
+run;
+
+* Cluster 1 is AdvM and cluster 2 is not... false positive rate of 60% and false negative rate of 10%;
 
 ods pdf close
