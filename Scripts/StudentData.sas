@@ -1,12 +1,12 @@
 /* Initialise data ------------------------------------------------------------------------------------------------------------------- */
 
-ods pdf file = 'D:\Documents\GitHub\SASMultivariate\StudentDataOutput.pdf';
+ods pdf file = 'D:\Documents\GitHub\SASMultivariate\Outputs\StudentDataOutput.pdf';
 
 options ls = 78;
 
 /* Load data from CSV and create unique ID for each student */
 data StudentData;
-  infile "D:\Documents\GitHub\SASMultivariate\StudentData.csv" firstobs = 2 delimiter = ',';
+  infile "D:\Documents\GitHub\SASMultivariate\Data\StudentData.csv" firstobs = 2 delimiter = ',';
   input Math Physics English History AdvM $ GPA NSECH;
   IDs = _n_;
 run;

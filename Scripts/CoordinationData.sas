@@ -1,12 +1,12 @@
 /* Initialise data ------------------------------------------------------------------------------------------------------------------- */
 
-ods pdf file = 'D:\Documents\GitHub\SASMultivariate\CoordinationDataOutput.pdf';
+ods pdf file = 'D:\Documents\GitHub\SASMultivariate\Outputs\CoordinationDataOutput.pdf';
 
 options ls = 78;
 
 /* Load data from CSV */
 data CData;
-  infile "D:\Documents\GitHub\SASMultivariate\CoordinationData.csv" firstobs = 2 delimiter = ',';
+  infile "D:\Documents\GitHub\SASMultivariate\Data\CoordinationData.csv" firstobs = 2 delimiter = ',';
   input ID Group $ C1 C2 C3 C4;
 run;
 
